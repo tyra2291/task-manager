@@ -2,15 +2,21 @@ import * as taskService from "../services/taskService.js";
 import { taskSchema } from "../validators/taskValidator.js";
 
 export const createTask = async (req, res) => {
-  const { title, priority } = req.body;
+  try {
+    const { title, priority } = req.body;
 
-  const task = await taskService.createTask({
-    title,
-    priority,
-    userId: req.user.userId
-  });
+    const task = await taskService.createTask({
+      title,
+      priority,
+      userId: req.user.userId
+    });
 
-  res.status(201).json(task);
+    res.status(201).json(task);
+
+  } catch (err) {
+    console.error("createTask error:", err);
+    res.status(500).json({ error: err.message });
+  }
 };
 
 export const getTasks = async (req, res) => {

@@ -34,3 +34,11 @@ export const getDB = () => {
   }
   return connection;
 };
+
+export const closeDB = async () => {
+  if (connection) {
+    await connection.end();
+    connection = null;
+    console.log("🛑 DB closed");
+  }
+};
