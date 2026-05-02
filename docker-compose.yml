@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+  db:
+    image: mysql:8
+    container_name: mysql_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: task_manager
+      MYSQL_USER: app_user
+      MYSQL_PASSWORD: AppUser_2026!
+    ports:
+      - "3307:3306"
+    volumes:
+    - db_data:/var/lib/mysql
+    - ./db-init:/docker-entrypoint-initdb.d
+
+  app:
+    build: .
+    container_name: task_app
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_USER: app_user
+      DB_PASSWORD: AppUser_2026!
+      DB_NAME: task_manager
+      JWT_SECRET: supersecretkey123
+
+volumes:
+  db_data:
