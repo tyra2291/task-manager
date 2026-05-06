@@ -39,6 +39,6 @@ export const closeDB = async () => {
   if (connection) {
     await connection.end();
     connection = null;
-    console.log("🛑 DB closed");
+    console.log("DB closed");
   }
 };
