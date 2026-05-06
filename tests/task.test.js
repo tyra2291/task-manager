@@ -54,4 +54,54 @@ describe("Tasks API", () => {
     expect(res.statusCode).toBe(401);
   });
 
+it("should get all tasks for the user", async () => {
+
+  // create task
+  await request(app)
+    .post("/tasks")
+    .set("Authorization", `Bearer ${token}`)
+    .send({
+      title: "Task 1",
+      priority: "high"
+    });
+
+  const res = await request(app)
+    .get("/tasks")
+    .set("Authorization", `Bearer ${token}`);
+
+  expect(res.statusCode).toBe(200);
+
+  expect(res.body.length).toBe(1);
+  expect(res.body[0].title).toBe("Task 1");
+});
+
+it("should update a task", async () => {
+
+  // create task
+  const createRes = await request(app)
+    .post("/tasks")
+    .set("Authorization", `Bearer ${token}`)
+    .send({
+      title: "Old title",
+      priority: "low"
+    });
+
+  const taskId = createRes.body.id;
+
+  // update task
+  const updateRes = await request(app)
+    .put(`/tasks/${taskId}`)
+    .set("Authorization", `Bearer ${token}`)
+    .send({
+      title: "New title",
+      priority: "high"
+    });
+
+  expect(updateRes.statusCode).toBe(200);
+
+  expect(updateRes.body.title).toBe("New title");
+  expect(updateRes.body.priority).toBe("high");
+});
+
+
 });
