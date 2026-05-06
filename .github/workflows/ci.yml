@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  test:
+
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8
+
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: task_manager
+          MYSQL_USER: app_user
+          MYSQL_PASSWORD: password
+
+        ports:
+          - 3306:3306
+
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_USER: app_user
+      DB_PASSWORD: password
+      DB_NAME: task_manager
+      JWT_SECRET: testsecret
+
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Create tables
+        run: |
+          mysql -h 127.0.0.1 -uapp_user -ppassword task_manager <<EOF
+          CREATE TABLE IF NOT EXISTS users (
+            id BIGINT PRIMARY KEY,
+            email VARCHAR(255) UNIQUE NOT NULL,
+            password VARCHAR(255) NOT NULL
+          );
+
+          CREATE TABLE IF NOT EXISTS tasks (
+            id BIGINT PRIMARY KEY,
+            title VARCHAR(255) NOT NULL,
+            priority VARCHAR(50),
+            user_id BIGINT,
+            CONSTRAINT fk_user
+              FOREIGN KEY (user_id)
+              REFERENCES users(id)
+              ON DELETE CASCADE
+          );
+          EOF
+
+      - name: Run tests
+        run: npm test
